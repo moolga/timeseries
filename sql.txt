@@ -1,0 +1,40 @@
+-- 1. 아이템 테이블
+CREATE TABLE items (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    grade VARCHAR(20),
+    icon_url TEXT
+);
+
+-- 2. 실제 시세 테이블
+CREATE TABLE item_prices (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    price INTEGER NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- 3. 예측 결과 테이블
+CREATE TABLE predictions (
+    id SERIAL PRIMARY KEY,
+    item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    model VARCHAR(50) NOT NULL, -- e.g. ARIMA, LSTM, GRU
+    predicted_date DATE NOT NULL,
+    predicted_price INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- 4. 학습 로그 테이블 (선택)
+CREATE TABLE train_logs (
+    id SERIAL PRIMARY KEY,
+    model VARCHAR(50) NOT NULL,
+    trained_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    duration_seconds INTEGER,
+    status VARCHAR(20) -- e.g. 'SUCCESS', 'FAILURE'
+);
+
+-- 인덱스 추가 권장 (시세 빠른 조회)
+CREATE INDEX idx_item_prices_item_id ON item_prices(item_id);
+CREATE INDEX idx_predictions_item_id ON predictions(item_id);
+CREATE INDEX idx_predictions_date ON predictions(predicted_date);
